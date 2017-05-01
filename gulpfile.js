@@ -24,23 +24,28 @@ var gulp         = require('gulp'),
 
 var sassSources,
     jsSources,
+    htmlSources,
     cssDest,
-    outputDir;
+    outputDir,
+    env;
+
+env = process.env.NODE_ENV || 'development';
 
 
-jsSources    = 'components/scripts/**/*.js';
+if (env === 'development') {
+    outputDir = 'builds/development';
+} else {
+    outputDir = 'builds/production';
+}
+
+jsSources    = 'components/scripts/*.js';
 sassSources  = 'components/sass/**/*.sass';
-
-
-var handleError = function (err) {
-    console.log(err);
-    this.emit('end');
-};
+htmlSources  = 'builds/development/*.html';
 
 //BROWSER-SYNC RELOAD
 gulp.task('serv', function () {
    browserSync.init({
-       server: "./builds/development"
+       server: "./" + outputDir
    })
 });
 
@@ -53,8 +58,9 @@ gulp.task('sass', function () {
             .pipe(sass())
             .pipe(sourcemaps.init())
             .pipe(autoprefixer())
+            .pipe(gulpIf(env === 'production', minifyCss()))
             .pipe(sourcemaps.write())
-            .pipe(gulp.dest('builds/development/css'))
+            .pipe(gulp.dest(outputDir + '/css'))
             .pipe(browserSync.stream())
 });
 
@@ -68,11 +74,18 @@ gulp.task('js', function () {
             .pipe(sourcemaps.init())
             .pipe(concat('main.js'))
             .pipe(browserify())
+            .pipe(gulpIf(env === 'production', uglify()))
             .pipe(sourcemaps.write())
-            .pipe(gulp.dest('builds/development/js'))
+            .pipe(gulp.dest(outputDir + '/js'))
             .pipe(browserSync.stream())
 });
-
+gulp.task('minifyHTML', function () {
+    gulp.src(htmlSources)
+            .pipe(gulpIf(env === 'production', htmlmin({
+                collapseWhitespace: true
+            })))
+            .pipe(gulpIf(env === 'production', gulp.dest(outputDir)))
+});
 
 
 /*---------------------------
@@ -82,13 +95,13 @@ gulp.task('js', function () {
 gulp.task('watch', function () {
     gulp.watch(jsSources, ['js']);
     gulp.watch(sassSources, ['sass']);
+    gulp.watch('builds/development/*.html', ['minifyHTML']);
     gulp.watch('builds/development/*.html').on('change', browserSync.reload);
 })
-
 
 
 /*---------------------------
         DEFAULT TASK
 ---------------------------*/
 
-gulp.task('default', ['serv', 'sass', 'js', 'watch'])
+gulp.task('default', ['serv', 'sass', 'minifyHTML', 'js', 'watch'])
