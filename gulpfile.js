@@ -37,6 +37,13 @@ var handleError = function (err) {
     this.emit('end');
 };
 
+//BROWSER-SYNC RELOAD
+gulp.task('serv', function () {
+   browserSync.init({
+       server: "./builds/development"
+   })
+});
+
 //SASS TO CSS
 gulp.task('sass', function () {
     return gulp.src(sassSources)
@@ -48,6 +55,7 @@ gulp.task('sass', function () {
             .pipe(autoprefixer())
             .pipe(sourcemaps.write())
             .pipe(gulp.dest('builds/development/css'))
+            .pipe(browserSync.stream())
 });
 
 //CONCAT JS
@@ -62,6 +70,7 @@ gulp.task('js', function () {
             .pipe(browserify())
             .pipe(sourcemaps.write())
             .pipe(gulp.dest('builds/development/js'))
+            .pipe(browserSync.stream())
 });
 
 
@@ -73,6 +82,7 @@ gulp.task('js', function () {
 gulp.task('watch', function () {
     gulp.watch(jsSources, ['js']);
     gulp.watch(sassSources, ['sass']);
+    gulp.watch('builds/development/*.html').on('change', browserSync.reload);
 })
 
 
@@ -80,3 +90,5 @@ gulp.task('watch', function () {
 /*---------------------------
         DEFAULT TASK
 ---------------------------*/
+
+gulp.task('default', ['serv', 'sass', 'js', 'watch'])
