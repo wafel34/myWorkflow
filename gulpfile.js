@@ -13,6 +13,9 @@ var gulp         = require('gulp'),
     uglify       = require('gulp-uglify'),
     watch        = require('gulp-watch'),
     htmlmin      = require('gulp-htmlmin'),
+    sourcemaps   = require('gulp-sourcemaps'),
+    imagemin     = require('gulp-imagemin'),
+    //pngquant     = require('pngquant'),
     browserSync  = require('browser-sync').create();
 
 /*---------------------------
@@ -25,15 +28,25 @@ var sassSources,
     outputDir;
 
 
-jsSources    = 'components/scripts/*.js';
-sassSources  = 'components/sass/*.sass';
+jsSources    = 'components/scripts/**/*.js';
+sassSources  = 'components/sass/**/*.sass';
 
+
+var handleError = function (err) {
+    console.log(err);
+    this.emit('end');
+};
 
 //SASS TO CSS
 gulp.task('sass', function () {
     return gulp.src(sassSources)
-            .pipe(plumber())
+            .pipe(plumber({
+                errorHandler: undefined
+            }))
             .pipe(sass())
+            .pipe(sourcemaps.init())
+            .pipe(autoprefixer())
+            .pipe(sourcemaps.write())
             .pipe(gulp.dest('builds/development/css'))
 });
 
@@ -41,9 +54,13 @@ gulp.task('sass', function () {
 
 gulp.task('js', function () {
    return gulp.src(jsSources)
-            .pipe(plumber())
+            .pipe(plumber({
+                errorHandler: undefined
+            }))
+            .pipe(sourcemaps.init())
             .pipe(concat('main.js'))
             .pipe(browserify())
+            .pipe(sourcemaps.write())
             .pipe(gulp.dest('builds/development/js'))
 });
 
@@ -53,7 +70,10 @@ gulp.task('js', function () {
         WATCH TASK
 ---------------------------*/
 
-
+gulp.task('watch', function () {
+    gulp.watch(jsSources, ['js']);
+    gulp.watch(sassSources, ['sass']);
+})
 
 
 

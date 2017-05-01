@@ -4,7 +4,6 @@ var $ = require('jquery');
 
 $(function () {
     
-   alert('dupa'); 
 });
 },{"jquery":2}],2:[function(require,module,exports){
 /*!
@@ -10262,3 +10261,4 @@ return jQuery;
 } );
 
 },{}]},{},[1])
+//# sourceMappingURL=data:application/json;charset=utf8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImFwcC5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EiLCJmaWxlIjoibWFpbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIi8vZ2xvYmFsLmpRdWVyeSA9IHJlcXVpcmUoXCJqcXVlcnlcIik7XHJcbnZhciAkID0gcmVxdWlyZSgnanF1ZXJ5Jyk7XHJcblxyXG4kKGZ1bmN0aW9uICgpIHtcclxuICAgIFxyXG59KTsiXX0=
