@@ -15,7 +15,7 @@ var gulp         = require('gulp'),
     htmlmin      = require('gulp-htmlmin'),
     sourcemaps   = require('gulp-sourcemaps'),
     imagemin     = require('gulp-imagemin'),
-    //pngquant     = require('pngquant'),
+    pngquant     = require('imagemin-pngquant'),
     browserSync  = require('browser-sync').create();
 
 /*---------------------------
@@ -29,7 +29,7 @@ var sassSources,
     outputDir,
     env;
 
-env = process.env.NODE_ENV || 'development';
+env = process.env.NODE_ENV || 'production';
 
 
 if (env === 'development') {
@@ -44,9 +44,12 @@ htmlSources  = 'builds/development/*.html';
 
 //BROWSER-SYNC RELOAD
 gulp.task('serv', function () {
-   browserSync.init({
-       server: "./" + outputDir
-   })
+   
+    return browserSync.init({
+       
+        server: "./" + outputDir
+   
+    })
 });
 
 //SASS TO CSS
@@ -79,13 +82,27 @@ gulp.task('js', function () {
             .pipe(gulp.dest(outputDir + '/js'))
             .pipe(browserSync.stream())
 });
+
+//MINIFY HTML
 gulp.task('minifyHTML', function () {
-    gulp.src(htmlSources)
+    return gulp.src(htmlSources)
             .pipe(gulpIf(env === 'production', htmlmin({
                 collapseWhitespace: true
             })))
             .pipe(gulpIf(env === 'production', gulp.dest(outputDir)))
 });
+
+//COMPRESS IMAGES
+
+gulp.task('images', function () {
+    return gulp.src('builds/development/images/**/*.*')
+            .pipe(gulpIf(env === 'production', imagemin({
+                progressive: true,
+                svgoPlugins: [{ removeViewBox: false}],
+                use: [pngquant()]
+            })))
+            .pipe(gulpIf(env === 'production', gulp.dest(outputDir + '/images')))
+})
 
 
 /*---------------------------
@@ -96,6 +113,7 @@ gulp.task('watch', function () {
     gulp.watch(jsSources, ['js']);
     gulp.watch(sassSources, ['sass']);
     gulp.watch('builds/development/*.html', ['minifyHTML']);
+    gulp.watch('builds/development/images/**/*.*', ['images']);
     gulp.watch('builds/development/*.html').on('change', browserSync.reload);
 })
 
