@@ -29,7 +29,7 @@ var sassSources,
     outputDir,
     env;
 
-env = process.env.NODE_ENV || 'production';
+env = process.env.NODE_ENV || 'development';
 
 
 if (env === 'development') {
@@ -39,16 +39,22 @@ if (env === 'development') {
 }
 
 jsSources    = 'components/scripts/*.js';
-sassSources  = 'components/sass/**/*.sass';
+sassSources  = 'components/sass/**/style.sass';
 htmlSources  = 'builds/development/*.html';
+
+var onError = function (err) {
+  console.log(err);
+  this.emit('end');
+};
+
 
 //BROWSER-SYNC RELOAD
 gulp.task('serv', function () {
-   
+
     return browserSync.init({
-       
+
         server: "./" + outputDir
-   
+
     })
 });
 
@@ -56,13 +62,13 @@ gulp.task('serv', function () {
 gulp.task('sass', function () {
     return gulp.src(sassSources)
             .pipe(plumber({
-                errorHandler: undefined
+              errorHandler: onError
             }))
+            .pipe(sourcemaps.init({loadMaps: true}))
             .pipe(sass())
-            .pipe(sourcemaps.init())
             .pipe(autoprefixer())
-            .pipe(gulpIf(env === 'production', minifyCss()))
             .pipe(sourcemaps.write())
+            .pipe(gulpIf(env === 'production', minifyCss()))
             .pipe(gulp.dest(outputDir + '/css'))
             .pipe(browserSync.stream())
 });
@@ -72,7 +78,7 @@ gulp.task('sass', function () {
 gulp.task('js', function () {
    return gulp.src(jsSources)
             .pipe(plumber({
-                errorHandler: undefined
+                errorHandler: onError
             }))
             .pipe(sourcemaps.init())
             .pipe(concat('main.js'))
@@ -111,7 +117,8 @@ gulp.task('images', function () {
 
 gulp.task('watch', function () {
     gulp.watch(jsSources, ['js']);
-    gulp.watch(sassSources, ['sass']);
+    gulp.watch('components/sass/**/*.sass', ['sass']);
+    gulp.watch('components/sass/**/*.scss', ['sass']);
     gulp.watch('builds/development/*.html', ['minifyHTML']);
     gulp.watch('builds/development/images/**/*.*', ['images']);
     gulp.watch('builds/development/*.html').on('change', browserSync.reload);
